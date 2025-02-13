@@ -1,61 +1,25 @@
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const nodemailer = require('nodemailer');
-const bcrypt = require('bcryptjs');
-const http = require('http');
-const socketIo = require('socket.io');
-const { body, validationResult } = require('express-validator');
-const users = require("./routes/users");
-const authRoutes = require("./routes/auth");
-const passwordResetRoutes = require("./routes/passwordReset");
-const transactionRoutes = require('./routes/transactionRoutes');
-const dashboardRoutes = require('./routes/dashboardRoutes');
-const walletRoutes = require('./routes/walletRoutes');
-
-// Initialize Express app and HTTP server
+require("dotenv").config();
+const express = require("express");
 const app = express();
-const server = http.createServer(app);
+const nodemailer = require('nodemailer');
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+const cors = require("cors");
+const connection = require("./db");
+const userRoutes = require("./routes/users");
+const authRoutes = require("./routes/auth");
 
-// MongoDB connection
-const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/gamezone';
-mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('Database connected successfully'))
-  .catch(err => {
-    console.error('Database connection error:', err);
-    process.exit(1);
-  });
+// database connection
+connection();
 
-// Middleware setup
+// middlewares
 app.use(express.json());
 app.use(cors());
 
-// WebSocket setup
-const io = socketIo(server, {
-  cors: {
-    origin: 'http://localhost:3000',
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type'],
-    credentials: true,
-  },
-});
-
-// Route handling
-app.use("/api/users", users);
+// routes
+app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
-app.use("/api/password-reset", passwordResetRoutes);
-app.use('/api/transaction', transactionRoutes);
-app.use('/api/wallet', walletRoutes);
-app.use('/api/users', dashboardRoutes);
 
-// User Schema and Model (assuming user authentication is handled somewhere else)
-const userSchema = new mongoose.Schema({
-  username: String,
-  email: String,
-});
-
-const User = mongoose.model('User', userSchema);
 
 // Ticket Schema and Model
 const ticketSchema = new mongoose.Schema({
@@ -262,8 +226,5 @@ app.post('/api/subscribe', async (req, res) => {
   }
 });
 
-// Start server
 const port = process.env.PORT || 8080;
-server.listen(port, () => {
-  console.log(`Server running on port ${port}...`);
-});
+app.listen(port, console.log(`Listening on port ${port}...`));
