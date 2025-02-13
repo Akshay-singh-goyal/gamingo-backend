@@ -5,7 +5,7 @@ const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const cors = require("cors");
-const connection = require("./db");
+const connection = require("./routes/db");
 const userRoutes = require("./routes/users");
 const authRoutes = require("./routes/auth");
 
